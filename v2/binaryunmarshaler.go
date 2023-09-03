@@ -98,9 +98,6 @@ func (f *Filter) UnmarshalBinary(data []byte) (err error) {
 }
 
 func (f *Filter) UnmarshalFromReader(input io.Reader) (n int64, err error) {
-	f.lock.Lock()
-	defer f.lock.Unlock()
-
 	buf := &hashingReader{
 		reader: input,
 		hasher: sha512.New384(),

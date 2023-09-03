@@ -30,8 +30,6 @@ func (f *Filter) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return -1, err
 	}
-	f.lock.Lock()
-	defer f.lock.Unlock()
 	f.m = f2.m
 	f.n = f2.n
 	f.bits = f2.bits
@@ -68,9 +66,6 @@ func ReadFile(filename string) (f *Filter, n int64, err error) {
 
 // WriteTo a Writer w from lossless-compressed Bloom Filter f
 func (f *Filter) WriteTo(w io.Writer) (n int64, err error) {
-	f.lock.RLock()
-	defer f.lock.RUnlock()
-
 	rawW := gzip.NewWriter(w)
 	defer rawW.Close()
 

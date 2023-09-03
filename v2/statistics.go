@@ -31,22 +31,18 @@ func CountBitsUint64s(b []uint64) int {
 
 // PreciseFilledRatio is an exhaustive count # of 1's
 func (f *Filter) PreciseFilledRatio() float64 {
-	f.lock.RLock()
-	defer f.lock.RUnlock()
 	return float64(CountBitsUint64s(f.bits)) / float64(f.M())
 }
 
 // N is how many elements have been inserted
 // (actually, how many Add()s have been performed?)
 func (f *Filter) N() uint64 {
-	f.lock.RLock()
-	defer f.lock.RUnlock()
-
 	return f.n
 }
 
 // FalsePosititveProbability is the upper-bound probability of false positives
-//  (1 - exp(-k*(n+0.5)/(m-1))) ** k
+//
+//	(1 - exp(-k*(n+0.5)/(m-1))) ** k
 func (f *Filter) FalsePosititveProbability() float64 {
 	k := float64(f.K())
 	n := float64(f.N())

@@ -45,15 +45,14 @@ func (c *counter) Write(p []byte) (n int, err error) {
 // MarshallToWriter marshalls the filter into the given io.Writer
 // Binary layout (Little Endian):
 //
-//	 k	1 uint64
-//	 n	1 uint64
-//	 m	1 uint64
-//	 keys	[k]uint64
-//	 bits	[(m+63)/64]uint64
-//	 hash	sha384 (384 bits == 48 bytes)
+//	k	1 uint64
+//	n	1 uint64
+//	m	1 uint64
+//	keys	[k]uint64
+//	bits	[(m+63)/64]uint64
+//	hash	sha384 (384 bits == 48 bytes)
 //
-//	 size = (3 + k + (m+63)/64) * 8 bytes
-//
+//	size = (3 + k + (m+63)/64) * 8 bytes
 func (f *Filter) MarshallToWriter(out io.Writer) (int, [sha512.Size384]byte, error) {
 	var (
 		c      = &counter{0}
@@ -61,8 +60,6 @@ func (f *Filter) MarshallToWriter(out io.Writer) (int, [sha512.Size384]byte, err
 		mw     = io.MultiWriter(out, hasher, c)
 		hash   [sha512.Size384]byte
 	)
-	f.lock.RLock()
-	defer f.lock.RUnlock()
 
 	if _, err := mw.Write(headerMagic); err != nil {
 		return c.bytes, hash, err

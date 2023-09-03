@@ -18,7 +18,6 @@ package v2
 import (
 	"errors"
 	"hash"
-	"sync"
 )
 
 var (
@@ -27,7 +26,6 @@ var (
 
 // Filter is an opaque Bloom filter type
 type Filter struct {
-	lock sync.RWMutex
 	bits []uint64
 	keys []uint64
 	m    uint64 // number of bits the "bits" field should recognize
@@ -58,8 +56,6 @@ const rotation = 17
 // Adds an already hashes item to the filter.
 // Identical to Add (but slightly faster)
 func (f *Filter) AddHash(hash uint64) {
-	f.lock.Lock()
-	defer f.lock.Unlock()
 	var (
 		i uint64
 	)
@@ -74,8 +70,6 @@ func (f *Filter) AddHash(hash uint64) {
 // ContainsHash tests if f contains the (already hashed) key
 // Identical to Contains but slightly faster
 func (f *Filter) ContainsHash(hash uint64) bool {
-	f.lock.RLock()
-	defer f.lock.RUnlock()
 	var (
 		i uint64
 		r = uint64(1)
@@ -97,9 +91,6 @@ func (f *Filter) Contains(v hash.Hash64) bool {
 
 // Copy f to a new Bloom filter
 func (f *Filter) Copy() (*Filter, error) {
-	f.lock.RLock()
-	defer f.lock.RUnlock()
-
 	out, err := f.NewCompatible()
 	if err != nil {
 		return nil, err
@@ -115,9 +106,6 @@ func (f *Filter) UnionInPlace(f2 *Filter) error {
 		return errors.New("incompatible bloom filters")
 	}
 
-	f.lock.Lock()
-	defer f.lock.Unlock()
-
 	for i, bitword := range f2.bits {
 		f.bits[i] |= bitword
 	}
@@ -131,9 +119,6 @@ func (f *Filter) Union(f2 *Filter) (out *Filter, err error) {
 	if !f.IsCompatible(f2) {
 		return nil, errors.New("incompatible bloom filters")
 	}
-
-	f.lock.RLock()
-	defer f.lock.RUnlock()
 
 	out, err = f.NewCompatible()
 	if err != nil {

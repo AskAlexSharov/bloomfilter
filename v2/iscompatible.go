@@ -26,12 +26,6 @@ func noBranchCompareUint64s(b0, b1 []uint64) uint64 {
 
 // IsCompatible is true if f and f2 can be Union()ed together
 func (f *Filter) IsCompatible(f2 *Filter) bool {
-	f.lock.RLock()
-	defer f.lock.RUnlock()
-
-	f2.lock.RLock()
-	defer f2.lock.RUnlock()
-
 	// 0 is true, non-0 is false
 	compat := f.M() ^ f2.M()
 	compat |= f.K() ^ f2.K()
