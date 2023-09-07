@@ -16,7 +16,7 @@
 package v2
 
 import (
-	"compress/gzip"
+	"bufio"
 	_ "encoding/gob" // make sure gob is available
 	"encoding/json"
 	"errors"
@@ -40,11 +40,10 @@ func (f *Filter) ReadFrom(r io.Reader) (n int64, err error) {
 // ReadFrom Reader r into a lossless-compressed Bloom filter f
 func ReadFrom(r io.Reader) (f *Filter, n int64, err error) {
 	f = new(Filter)
-	rawR, err := gzip.NewReader(r)
+	rawR := bufio.NewReaderSize(r, 1*1024*1024)
 	if err != nil {
 		return nil, -1, err
 	}
-	defer rawR.Close()
 	n, err = f.UnmarshalFromReader(rawR)
 	if err != nil {
 		return nil, -1, err
@@ -66,11 +65,11 @@ func ReadFile(filename string) (f *Filter, n int64, err error) {
 
 // WriteTo a Writer w from lossless-compressed Bloom Filter f
 func (f *Filter) WriteTo(w io.Writer) (n int64, err error) {
-	rawW := gzip.NewWriter(w)
-	defer rawW.Close()
-
+	rawW := bufio.NewWriterSize(w, 1*1024*1024)
 	intN, _, err := f.MarshallToWriter(rawW)
-	//intN, _, err := f.MarshallToWriter(w)
+	if err := rawW.Flush(); err != nil {
+		return 0, err
+	}
 	n = int64(intN)
 	return n, err
 }
