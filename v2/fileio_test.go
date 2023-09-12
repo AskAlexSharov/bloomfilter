@@ -35,7 +35,7 @@ func (d devnull) Write(p []byte) (n int, err error) {
 
 func TestWriteRead(t *testing.T) {
 	// minimal filter
-	f, _ := New(8*1024*100, 5)
+	f, _ := New(8 * 1024 * 100)
 	// Add some content
 	var tests = make([]hashableUint64, 20)
 	for i := 0; i < 20; i++ {
@@ -63,7 +63,7 @@ func TestWriteRead(t *testing.T) {
 		}
 		verify(t, f2)
 		// test overwrite
-		f3, _ := New(8*5, 3)
+		f3, _ := New(8 * 5)
 		if _, err = f3.ReadFrom(bytes.NewReader(cpy)); err != nil {
 			t.Fatal(err)
 		}
@@ -109,7 +109,7 @@ func TestWriteRead(t *testing.T) {
 
 func TestCorruption(t *testing.T) {
 	// minimal filter
-	f, _ := New(8*32, 5)
+	f, _ := New(8 * 32)
 	// Add some content
 	var tests = make([]hashableUint64, 20)
 	for i := 0; i < 20; i++ {
@@ -160,7 +160,7 @@ func PrintMemUsage() {
 
 func TestWrite(t *testing.T) {
 	// 1Mb
-	f, _ := New(4*8*1024*1024, 1)
+	f, _ := New(4 * 8 * 1024 * 1024)
 	fmt.Printf("Allocated 1mb filter\n")
 	PrintMemUsage()
 	_, _ = f.WriteTo(devnull{})
@@ -183,7 +183,7 @@ func TestMarshaller(t *testing.T) {
 	h1 := sha512.New384()
 	h2 := sha512.New384()
 
-	f, _ := New(1*8*1024*1024, 1)
+	f, _ := New(1 * 8 * 1024 * 1024)
 	fillRandom(f)
 	// Marshall using writer
 	_, _, _ = f.MarshallToWriter(h1)
@@ -199,7 +199,7 @@ func TestMarshaller(t *testing.T) {
 func BenchmarkWrite1Mb(b *testing.B) {
 
 	// 1Mb
-	f, _ := New(1*8*1024*1024, 1)
+	f, _ := New(1 * 8 * 1024 * 1024)
 	f.Add(hashableUint64(0))
 	f.Add(hashableUint64(1))
 	f.Add(hashableUint64(1 << 3))

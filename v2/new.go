@@ -46,7 +46,8 @@ func OptimalM(maxN uint64, p float64) uint64 {
 // m is the size of the Bloom filter, in bits, >= 2
 //
 // k is the number of random keys, >= 1
-func New(m, k uint64) (*Filter, error) {
+func New(m uint64) (*Filter, error) {
+	k := uint64(3)
 	return NewWithKeys(m, newRandKeys(m, k))
 }
 
@@ -61,14 +62,14 @@ func newRandKeys(m uint64, k uint64) []uint64 {
 
 // NewCompatible Filter compatible with f
 func (f *Filter) NewCompatible() (*Filter, error) {
-	return NewWithKeys(f.m, f.keys)
+	return NewWithKeys(f.m, f.keys[:])
 }
 
 // NewOptimal Bloom filter with random CSPRNG keys
 func NewOptimal(maxN uint64, p float64) (*Filter, error) {
 	m := OptimalM(maxN, p)
-	k := OptimalK(m, maxN)
-	return New(m, k)
+	//k := OptimalK(m, maxN)
+	return New(m)
 }
 
 // uniqueKeys is true if all keys are unique
@@ -95,11 +96,13 @@ func NewWithKeys(m uint64, origKeys []uint64) (f *Filter, err error) {
 	if keys, err = newKeysCopy(origKeys); err != nil {
 		return nil, err
 	}
+	var kk [HardCodedK]uint64
+	copy(kk[:], keys)
 	return &Filter{
 		m:    m,
 		n:    0,
 		bits: bits,
-		keys: keys,
+		keys: kk,
 	}, nil
 }
 

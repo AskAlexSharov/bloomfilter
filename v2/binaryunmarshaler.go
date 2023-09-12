@@ -108,10 +108,11 @@ func (f *Filter) UnmarshalFromReader(input io.Reader) (n int64, err error) {
 		return buf.tot, err
 	}
 
-	f.keys, err = unmarshalBinaryKeys(buf, k)
+	keys, err := unmarshalBinaryKeys(buf, k)
 	if err != nil {
 		return buf.tot, err
 	}
+	copy(f.keys[:], keys)
 	f.bits, err = unmarshalBinaryBits(buf, f.m)
 	if err != nil {
 		return buf.tot, err

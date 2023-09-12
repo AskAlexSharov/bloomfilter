@@ -29,6 +29,6 @@ func (f *Filter) IsCompatible(f2 *Filter) bool {
 	// 0 is true, non-0 is false
 	compat := f.M() ^ f2.M()
 	compat |= f.K() ^ f2.K()
-	compat |= noBranchCompareUint64s(f.keys, f2.keys)
+	compat |= noBranchCompareUint64s(f.keys[:], f2.keys[:])
 	return compat == 0
 }

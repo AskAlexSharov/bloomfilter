@@ -98,7 +98,7 @@ func (f *Filter) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&jsonType{
 		string(version),
 		f.bits,
-		f.keys,
+		f.keys[:],
 		f.m,
 		f.n,
 	})
@@ -113,7 +113,7 @@ func (f *Filter) UnmarshalJSON(data []byte) error {
 		return errors.New("incompatible version")
 	}
 	f.bits = j.Bits
-	f.keys = j.Keys
+	copy(f.keys[:], j.Keys)
 	f.n = j.N
 	f.m = j.M
 	return nil

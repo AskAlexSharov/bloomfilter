@@ -24,10 +24,12 @@ var (
 	errHashMismatch = errors.New("hash mismatch, bloom filter corruption or wrong version")
 )
 
+const HardCodedK = 3
+
 // Filter is an opaque Bloom filter type
 type Filter struct {
 	bits []uint64
-	keys []uint64
+	keys [HardCodedK]uint64
 	m    uint64 // number of bits the "bits" field should recognize
 	n    uint64 // number of inserted elements
 }
@@ -52,6 +54,7 @@ func (f *Filter) Add(v hash.Hash64) {
 // does not repeat for quite a while, but even for low number of filters the
 // changes are quite rapid
 const rotation = 17
+const rotationOf64 = 64 - rotation
 
 // Adds an already hashes item to the filter.
 // Identical to Add (but slightly faster)
@@ -59,8 +62,8 @@ func (f *Filter) AddHash(hash uint64) {
 	var (
 		i uint64
 	)
-	for n := 0; n < len(f.keys); n++ {
-		hash = ((hash << rotation) | (hash >> (64 - rotation))) ^ f.keys[n]
+	for n := 0; n < HardCodedK; n++ {
+		hash = ((hash << rotation) | (hash >> rotationOf64)) ^ f.keys[n]
 		i = hash % f.m
 		f.bits[i>>6] |= 1 << uint(i&0x3f)
 	}
@@ -74,8 +77,8 @@ func (f *Filter) ContainsHash(hash uint64) bool {
 		i uint64
 		r = uint64(1)
 	)
-	for n := 0; n < len(f.keys) && r != 0; n++ {
-		hash = ((hash << rotation) | (hash >> (64 - rotation))) ^ f.keys[n]
+	for n := 0; n < HardCodedK && r != 0; n++ {
+		hash = ((hash << rotation) | (hash >> rotationOf64)) ^ f.keys[n]
 		i = hash % f.m
 		r &= (f.bits[i>>6] >> uint(i&0x3f)) & 1
 	}
