@@ -131,3 +131,34 @@ func (f *Filter) UnmarshalFromReader(input io.Reader) (n int64, err error) {
 	}
 	return buf.tot, nil
 }
+
+// noopHash implements hash.Hash interface but does nothing
+type noopHash struct{}
+
+func (h *noopHash) Write(p []byte) (n int, err error) { return len(p), nil }
+func (h *noopHash) Sum(b []byte) []byte               { return b }
+func (h *noopHash) Reset()                            {}
+func (h *noopHash) Size() int                         { return 0 }
+func (h *noopHash) BlockSize() int                    { return 64 }
+
+func (f *Filter) UnmarshalFromReaderNoVerify(input io.Reader) (n int64, err error) {
+	buf := &hashingReader{
+		reader: input,
+		hasher: &noopHash{},
+	}
+	var k uint64
+	k, f.n, f.m, err = unmarshalBinaryHeader(input)
+	if err != nil {
+		return buf.tot, err
+	}
+	keys, err := unmarshalBinaryKeys(input, k)
+	if err != nil {
+		return buf.tot, err
+	}
+	copy(f.keys[:], keys)
+	f.bits, err = unmarshalBinaryBits(buf, f.m)
+	if err != nil {
+		return buf.tot, err
+	}
+	return buf.tot, nil
+}
